@@ -27,7 +27,7 @@ def unZip(some_file,some_output):
     """
 
     f = gzip.open(some_file,'r')
-    g = open(some_output,'w')
+    g = open(some_output,'wb')
     g.writelines(f.readlines())
     f.close()
     g.close()
@@ -43,7 +43,7 @@ def pdbDownload(file_list,hostname=HOSTNAME,directory=DIRECTORY,prefix=PREFIX,
     success = True
 
     # Log into server
-    print "Connecting..."
+    print("Connecting...")
     ftp = ftplib.FTP()
     ftp.connect(hostname)
     ftp.login()
@@ -60,13 +60,14 @@ def pdbDownload(file_list,hostname=HOSTNAME,directory=DIRECTORY,prefix=PREFIX,
     to_write = ["%s%s" % (f,suffix) for f in file_list]
     for i in range(len(to_get)):
         try:
+            print(f'{hostname}{to_get[i]}')
             ftp.retrbinary("RETR %s" % to_get[i],open(to_write[i],"wb").write)
             final_name = "%s.pdb" % to_write[i][:to_write[i].index(".")]
             unZip(to_write[i],final_name) 
-            print "%s retrieved successfully." % final_name
+            print( "%s retrieved successfully." % final_name)
         except ftplib.error_perm:
             os.remove(to_write[i])
-            print "ERROR!  %s could not be retrieved!" % file_list[i]
+            print( "ERROR!  %s could not be retrieved!" % file_list[i])
             success = False
 
     # Log out
@@ -74,7 +75,7 @@ def pdbDownload(file_list,hostname=HOSTNAME,directory=DIRECTORY,prefix=PREFIX,
 
     if success:
         return True
-    else: 
+    else:
         return False
 
 
@@ -86,7 +87,7 @@ def main():
     try:
         file_input = sys.argv[1:]
     except IndexError:
-        print __usage__
+        print(__usage__)
         sys.exit()
 
     pdb_list = []
@@ -97,7 +98,7 @@ def main():
             f = open(arg,"r")
             tmp_list = f.readlines()
             f.close()
-        
+
             # Strip comments and blank lines, recombine file, then split on all 
             # white space
             tmp_list = [p for p in tmp_list if p[0] != "#" and p.strip() != ""]
@@ -105,7 +106,7 @@ def main():
             tmp_list = tmp_list.split()
             tmp_list = [p.lower() for p in tmp_list]
             pdb_list.extend(tmp_list)
-       
+
         else:
             
             # Lower case, remove .pdb if appended
