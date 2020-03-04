@@ -112,13 +112,13 @@ def pdbSeq2Fasta(pdb,pdb_id="",chain="all",use_atoms=False):
 
     # Grab sequences
     chain_dict, seq_type = pdbSeq(pdb,use_atoms)
-
+    print(chain_dict)
     # Convert modified amino acids to their natural counterparts
     chain_dict = convertModifiedAA(chain_dict,pdb)
-
+    print(chain_dict)
     # Determine which chains are being written out
     if chain == "all":
-        chains_to_write = chain_dict.keys()
+        chains_to_write = list(chain_dict.keys())
         chains_to_write.sort()
     else:
         if chain in chain_dict.keys():
@@ -134,14 +134,14 @@ def pdbSeq2Fasta(pdb,pdb_id="",chain="all",use_atoms=False):
                 chain_dict[c][aa_index] = AA3_TO_AA1[aa]
             except KeyError:
                 chain_dict[c][aa_index] = "X"
-
+    print(chains_to_write)
     out = []
     for c in chains_to_write:
         out.append(">%s%s_%s\n" % (pdb_id,c,seq_type))
 
         # Write output in lines 80 characters long
         seq_length = len(chain_dict[c])
-        num_lines = seq_length / 80
+        num_lines = int(seq_length / 80)
         
         for i in range(num_lines+1):
             out.append("".join([aa for aa in chain_dict[c][80*i:80*(i+1)]]))
@@ -190,7 +190,7 @@ def main():
         
         seq = pdbSeq2Fasta(pdb,pdb_id,options.chain,options.atomseq)
 
-        print seq
+        print(seq)
     
 
 
