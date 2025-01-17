@@ -16,8 +16,8 @@ __usage__ = "pdb_download.py pdb_id or file w/ list of ids"
 
 import os, sys, ftplib, shutil, gzip
 
-HOSTNAME="ftp.wwpdb.org"
-DIRECTORY="/pub/pdb/data/structures/all/pdb/"
+HOSTNAME="ftp.ebi.ac.uk"
+DIRECTORY="/pub/databases/pdb/data/structures/all/pdb/"
 PREFIX="pdb"
 SUFFIX=".ent.gz"
 
