@@ -8,11 +8,14 @@
 pdb_download.py
 
 Download a pdb or set of pdb files and uncompress them.
+
+Usage:
+    pdb_download.py [--cif] pdb_id or file w/ list of ids
 """
 
 __author__ = "Michael J. Harms"
 __date__ = "070521"
-__usage__ = "pdb_download.py pdb_id or file w/ list of ids"
+__usage__ = "pdb_download.py [--cif] pdb_id or file w/ list of ids"
 
 import os, shutil, sys
 from pdbtools.helper import cmdline
@@ -25,6 +28,12 @@ def main():
 
     try:
         file_input = sys.argv[1:]
+        # Check if --cif is present
+        if '--cif' in file_input:
+            is_cif = True
+            file_input.remove('--cif')
+        else:
+            is_cif = False
     except IndexError:
         print(__usage__)
         sys.exit()
@@ -55,9 +64,8 @@ def main():
 
             pdb_list.append(pdb_id)
 
-    # Download pdbs
-    download.pdbDownload(pdb_list)
-
+    # Download files (PDB by default, CIF if --cif is given)
+    download.pdbDownload(pdb_list, file_format="cif" if is_cif else "pdb")
 
 if __name__ == "__main__":
     main()
