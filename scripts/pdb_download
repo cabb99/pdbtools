@@ -40,7 +40,7 @@ def main():
 
     pdb_list = []
     for arg in file_input:
-        if os.path.isfile(arg) and arg[-4:] != ".pdb":
+        if os.path.isfile(arg) and arg[-4:] != ".pdb" and arg[-4:] != ".cif":
 
             # Read in input file
             f = open(arg,"r")

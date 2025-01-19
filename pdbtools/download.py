@@ -7,91 +7,95 @@
 """
 pdb_download.py
 
-Download a pdb or set of pdb files and uncompress them.
+Download a pdb or set of pdb/mmCIF files and uncompress them using HTTPS.
 """
 
 __author__ = "Michael J. Harms"
 __date__ = "070521"
 __usage__ = "pdb_download.py pdb_id or file w/ list of ids"
 
-import os, sys, ftplib, shutil, gzip
+import os
+import sys
+import gzip
+import requests
 
-HOSTNAME="ftp.ebi.ac.uk"
-DIRECTORY="/pub/databases/pdb/data/structures/all/pdb/"
-PREFIX="pdb"
-SUFFIX=".ent.gz"
+# Base URLs for HTTPS downloads
+PDB_BASE_URL = "https://files.rcsb.org/download/"
+CIF_BASE_URL = "https://files.rcsb.org/download/"
 
-# Added constants for mmCIF
-CIF_DIRECTORY = "/pub/databases/pdb/data/structures/all/mmCIF/"
-CIF_PREFIX = ""
-CIF_SUFFIX = ".cif.gz"
+SUFFIXES = {"pdb": ".pdb", "cif": ".cif"}
 
-def unZip(some_file, some_output):
+def unZip(input_file, output_file):
     """
-    Unzip some_file using the gzip library and write to some_output.
+    Unzip input_file using the gzip library and write to output_file.
     """
+    with gzip.open(input_file, 'rb') as f_in, open(output_file, 'wb') as f_out:
+        f_out.write(f_in.read())
+    os.remove(input_file)
 
-    g = open(some_output,'wb')
-    with gzip.open(some_file,'rb') as f:
-        g.write(f.read()) #.decode("utf-8"))
-    g.close()
-    #g.writelines(f.readlines())
-    #f.close()
-    #g.close()
-
-    os.remove(some_file)
-
-def pdbDownload(file_list,hostname=HOSTNAME,directory=DIRECTORY,prefix=PREFIX,
-                suffix=SUFFIX, file_format="pdb"):
+def pdbDownload(file_list, file_format="pdb"):
     """
-    Download all PDB or mmCIF files in file_list and unzip them.
+    Download all PDB or mmCIF files in file_list using HTTPS and unzip them.
     
-    By default, downloads PDB files from EBI (file_format="pdb").
-    To download mmCIF instead, call with file_format="cif".
+    file_format can be "pdb" or "cif".
     """
+    if file_format not in SUFFIXES:
+        raise ValueError("Invalid file format. Use 'pdb' or 'cif'.")
 
-    # If user wants CIF, override defaults
-    if file_format.lower() == "cif":
-        directory = CIF_DIRECTORY
-        prefix = CIF_PREFIX
-        suffix = CIF_SUFFIX
-
+    base_url = CIF_BASE_URL if file_format == "cif" else PDB_BASE_URL
+    suffix = SUFFIXES[file_format]
     success = True
 
-    # Log into server
-    print("Connecting...")
-    ftp = ftplib.FTP()
-    ftp.connect(hostname)
-    ftp.login()
-
-    # Remove .pdb or .cif extensions from file_list
-    for file_index, file in enumerate(file_list):
+    for pdb_id in file_list:
+        file_base_url=base_url
+        file_suffix=suffix
         for ext in (".pdb", ".cif"):
-            if file.endswith(ext):
-                file_list[file_index] = file_list[file_index][:file.index(ext)]
+            if pdb_id.endswith(ext):
+                pdb_id = pdb_id[:pdb_id.index(ext)]
+            file_format = ext[1:]
+            file_base_url = CIF_BASE_URL if file_format == "cif" else PDB_BASE_URL
+            file_suffix = SUFFIXES[file_format]
+        
+        pdb_id = pdb_id.strip().lower()
+        if len(pdb_id) != 4:
+            print(f"ERROR! {pdb_id} is not a valid PDB ID!")
+            success = False
+            continue
 
-    # Decide final extension based on file_format
-    if file_format.lower() == "cif":
-        final_ext = ".cif"
-    else:
-        final_ext = ".pdb"
+        url = f"{file_base_url}{pdb_id}{file_suffix}.gz"
+        compressed_file = f"{pdb_id}{file_suffix}.gz"
+        output_file = f"{pdb_id}{file_suffix}"
 
-    # Download all files in file_list
-    to_get = ["%s/%s%s%s" % (directory,prefix,f,suffix) for f in file_list]
-    to_write = ["%s%s" % (f,suffix) for f in file_list]
-    for i in range(len(to_get)):
         try:
-            ftp.retrbinary("RETR %s" % to_get[i],open(to_write[i],"wb").write)
-            final_name = "%s%s" % (to_write[i][:to_write[i].index(".")],final_ext)
-            unZip(to_write[i],final_name)
-            print("%s retrieved successfully." % final_name)
-        except ftplib.error_perm:
-            if os.path.exists(to_write[i]):
-                os.remove(to_write[i])
-            print("ERROR!  %s could not be retrieved!" % file_list[i])
+            print(f"Downloading {pdb_id} from {url}...")
+            response = requests.get(url, stream=True)
+            if response.status_code == 200:
+                with open(compressed_file, 'wb') as f:
+                    f.write(response.content)
+                unZip(compressed_file, output_file)
+                print(f"{output_file} retrieved successfully.")
+            else:
+                print(f"ERROR! {pdb_id} could not be retrieved! HTTP {response.status_code}")
+                success = False
+        except Exception as e:
+            print(f"ERROR! {pdb_id} could not be retrieved! {e}")
             success = False
 
-    # Log out
-    ftp.quit()
-
     return success
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Usage: pdb_download.py pdb_id or file w/ list of ids")
+        sys.exit(1)
+
+    input_arg = sys.argv[1]
+
+    if os.path.isfile(input_arg):
+        with open(input_arg) as f:
+            file_list = [line.strip() for line in f.readlines()]
+    else:
+        file_list = [input_arg.strip()]
+
+    file_format = "cif" if len(sys.argv) > 2 and sys.argv[2].lower() == "cif" else "pdb"
+
+    download_files(file_list, file_format=file_format)
