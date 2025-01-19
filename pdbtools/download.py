@@ -20,10 +20,9 @@ import gzip
 import requests
 
 # Base URLs for HTTPS downloads
-PDB_BASE_URL = "https://files.rcsb.org/download/"
-CIF_BASE_URL = "https://files.rcsb.org/download/"
+BASE_URL = "https://files.rcsb.org/download"
 
-SUFFIXES = {"pdb": ".pdb", "cif": ".cif"}
+FORMATS={"pdb", "cif"}
 
 def unZip(input_file, output_file):
     """
@@ -39,22 +38,18 @@ def pdbDownload(file_list, file_format="pdb"):
     
     file_format can be "pdb" or "cif".
     """
-    if file_format not in SUFFIXES:
+    if file_format not in FORMATS:
         raise ValueError("Invalid file format. Use 'pdb' or 'cif'.")
 
-    base_url = CIF_BASE_URL if file_format == "cif" else PDB_BASE_URL
-    suffix = SUFFIXES[file_format]
+    suffix = file_format
     success = True
 
     for pdb_id in file_list:
-        file_base_url=base_url
         file_suffix=suffix
         for ext in (".pdb", ".cif"):
             if pdb_id.endswith(ext):
                 pdb_id = pdb_id[:pdb_id.index(ext)]
-            file_format = ext[1:]
-            file_base_url = CIF_BASE_URL if file_format == "cif" else PDB_BASE_URL
-            file_suffix = SUFFIXES[file_format]
+            file_suffix = ext[1:]
         
         pdb_id = pdb_id.strip().lower()
         if len(pdb_id) != 4:
@@ -62,9 +57,9 @@ def pdbDownload(file_list, file_format="pdb"):
             success = False
             continue
 
-        url = f"{file_base_url}{pdb_id}{file_suffix}.gz"
-        compressed_file = f"{pdb_id}{file_suffix}.gz"
-        output_file = f"{pdb_id}{file_suffix}"
+        url = f"{BASE_URL}/{pdb_id}.{file_suffix}.gz"
+        compressed_file = f"{pdb_id}.{file_suffix}.gz"
+        output_file = f"{pdb_id}.{file_suffix}"
 
         try:
             print(f"Downloading {pdb_id} from {url}...")
@@ -82,20 +77,3 @@ def pdbDownload(file_list, file_format="pdb"):
             success = False
 
     return success
-
-if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: pdb_download.py pdb_id or file w/ list of ids")
-        sys.exit(1)
-
-    input_arg = sys.argv[1]
-
-    if os.path.isfile(input_arg):
-        with open(input_arg) as f:
-            file_list = [line.strip() for line in f.readlines()]
-    else:
-        file_list = [input_arg.strip()]
-
-    file_format = "cif" if len(sys.argv) > 2 and sys.argv[2].lower() == "cif" else "pdb"
-
-    download_files(file_list, file_format=file_format)
