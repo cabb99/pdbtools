@@ -49,7 +49,7 @@ def pdbDownload(file_list, file_format="pdb"):
         for ext in (".pdb", ".cif"):
             if pdb_id.endswith(ext):
                 pdb_id = pdb_id[:pdb_id.index(ext)]
-            file_suffix = ext[1:]
+                file_suffix = ext[1:]
         
         pdb_id = pdb_id.strip().lower()
         if len(pdb_id) != 4:
