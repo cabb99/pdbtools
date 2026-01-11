@@ -17,7 +17,8 @@ __usage__ = "pdb_download.py pdb_id or file w/ list of ids"
 import os
 import sys
 import gzip
-import requests
+import urllib.request
+import urllib.error
 
 # Base URLs for HTTPS downloads
 BASE_URL = "https://files.rcsb.org/download"
@@ -63,15 +64,12 @@ def pdbDownload(file_list, file_format="pdb"):
 
         try:
             print(f"Downloading {pdb_id} from {url}...")
-            response = requests.get(url, stream=True)
-            if response.status_code == 200:
-                with open(compressed_file, 'wb') as f:
-                    f.write(response.content)
-                unZip(compressed_file, output_file)
-                print(f"{output_file} retrieved successfully.")
-            else:
-                print(f"ERROR! {pdb_id} could not be retrieved! HTTP {response.status_code}")
-                success = False
+            urllib.request.urlretrieve(url, compressed_file)
+            unZip(compressed_file, output_file)
+            print(f"{output_file} retrieved successfully.")
+        except urllib.error.HTTPError as e:
+            print(f"ERROR! {pdb_id} could not be retrieved! HTTP {e.code}")
+            success = False
         except Exception as e:
             print(f"ERROR! {pdb_id} could not be retrieved! {e}")
             success = False
