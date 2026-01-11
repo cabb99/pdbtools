@@ -228,15 +228,48 @@ _aa_index = [('ALA','A'),
 AA3_TO_AA1 = dict(_aa_index)
 AA1_TO_AA3 = dict([(aa[1],aa[0]) for aa in _aa_index])
 
-AA3_TO_AA1.update({'GTP':'G',
-                   'G':'G',
-                   'C':'C',
-                   'A':'A',
-                   'U':'T',
-                   'DG':'G',
-                   'DC':'C',
-                   'DA':'A',
-                   'DT':'T'})
+# --------------------------------------------------------------------------- #
+# Nucleotide name data
+# --------------------------------------------------------------------------- #
+
+# List of three-letter nucleotide codes and their one-letter equivalents
+# RNA bases
+_rna_index = [('A',   'A'),   # Adenine
+              ('C',   'C'),   # Cytosine
+              ('G',   'G'),   # Guanine
+              ('U',   'U'),   # Uracil
+              ('ADE', 'A'),   # Adenine (alternative)
+              ('CYT', 'C'),   # Cytosine (alternative)
+              ('GUA', 'G'),   # Guanine (alternative)
+              ('URA', 'U'),   # Uracil (alternative)
+              ('PSU', 'U'),   # Pseudouridine
+              ('5MU', 'U'),   # 5-methyluridine
+              ('H2U', 'U'),   # Dihydrouridine
+              ('M2G', 'G'),   # N2-methylguanosine
+              ('7MG', 'G'),   # 7-methylguanosine
+              ('OMC', 'C'),   # 2'-O-methylcytidine
+              ('OMG', 'G'),   # 2'-O-methylguanosine
+              ('YYG', 'G'),   # Modified G
+              ('GTP', 'G'),   # Guanosine triphosphate
+              ('ATP', 'A'),   # Adenosine triphosphate
+              ('CTP', 'C'),   # Cytidine triphosphate
+              ('UTP', 'U')]   # Uridine triphosphate
+
+# DNA bases
+_dna_index = [('DA',  'A'),   # Deoxyadenosine
+              ('DC',  'C'),   # Deoxycytidine
+              ('DG',  'G'),   # Deoxyguanosine
+              ('DT',  'T'),   # Deoxythymidine
+              ('DU',  'U'),   # Deoxyuridine
+              ('5MC', 'C'),   # 5-methylcytosine
+              ('5CM', 'C'),   # 5-methylcytosine (alternative)
+              ('1MA', 'A'),   # 1-methyladenosine
+              ('2MG', 'G'),   # 2-methylguanosine
+              ('6MA', 'A'),   # N6-methyladenosine
+              ('M5M', 'C')]   # 5-methylcytidine
+
+NUC3_TO_NUC1 = dict(_rna_index + _dna_index)
+NUC1_TO_NUC3 = dict([(n[1],n[0]) for n in _rna_index + _dna_index])
 # --------------------------------------------------------------------------- #
 # PDB record data
 # --------------------------------------------------------------------------- #

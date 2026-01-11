@@ -49,7 +49,7 @@ def main():
         f = open(pdb_file,'r')
         pdb = f.readlines()
         f.close()
-
+        
         sequence = seq.pdbSeq2Fasta(pdb,pdb_id,options.chain,options.atomseq)
 
         print(sequence)
