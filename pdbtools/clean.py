@@ -170,7 +170,7 @@ def backboneCheck(coord):
         # residue.
         for b in backbone_atoms:
             if len(b) > 1:
-                err = "\%s\" is duplicated!" % resid
+                err = "\"%s\" is duplicated!" % resid
                 raise PdbCleanError(err)
             if len(b) == 0:
                 to_remove.append(resid)
